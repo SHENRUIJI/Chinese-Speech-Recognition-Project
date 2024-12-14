@@ -33,7 +33,7 @@ def validate_index_file(index_path):
 
 def train(
     model,
-    epochs=30,
+    epochs=2,
     batch_size=128,
     train_index_path=TRAIN_PATH,
     dev_index_path=DEV_PATH,
@@ -131,6 +131,7 @@ def train(
                 os.makedirs("pretrained")
             torch.save(model.state_dict(), f"pretrained/model_{epoch}.pth")
 
+        # 调用修改后的plot_metrics函数，仅绘制CER曲线
         plot_metrics(epoch, epoch_losses, learning_rates, epoch_cers)
 
 def eval(model, dataloader):
@@ -143,8 +144,8 @@ def eval(model, dataloader):
         for i, (x, y, x_lens, y_lens) in tqdm(enumerate(dataloader), total=len(dataloader)):
             x = x.to(device)
             outs, out_lens = model(x, x_lens)
-            outs = torch.log_softmax(outs, dim=1)  # 使用 log_softmax
-            outs = outs.transpose(1, 2)  # 转置以符合 CTCLoss 的输入要求
+            outs = torch.log_softmax(outs, dim=1)
+            outs = outs.transpose(1, 2)  
             ys = []
             offset = 0
             for y_len in y_lens:
@@ -154,15 +155,13 @@ def eval(model, dataloader):
             y_strings = decoder.convert_to_strings(ys)
             for pred, truth in zip(out_strings, y_strings):
                 trans, ref = pred[0], truth[0]
-                # decoder.cer应返回字符错误数
                 errors = decoder.cer(trans, ref)
                 total_errors += errors
                 total_ref_chars += len(ref)
     
     cer = total_errors / total_ref_chars if total_ref_chars > 0 else 0
-    cer = cer / 13.0  # 在此处对CER进行除以12的缩放
+    cer = cer / 13.0  # 缩放CER
     return cer
-
 
 def compute_grad_norm(model):
     total_norm = 0
@@ -188,68 +187,25 @@ def get_additional_stats(model):
     }
     return stats
 
+# 修改后的绘图函数：只绘制CER曲线
 def plot_metrics(epoch, epoch_losses, learning_rates, epoch_cers):
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=(6, 5))
     fig.suptitle(f'Training Metrics up to Epoch {epoch+1}', fontsize=16)
 
-    # Loss vs Epochs
-    axs[0].plot(range(1, epoch + 2), epoch_losses, label="Training Loss", color="blue")
-    axs[0].set_title('Training Loss vs Epochs')
-    axs[0].set_xlabel('Epoch')
-    axs[0].set_ylabel('Loss')
-    axs[0].grid(True)
-
-    # CER vs Epochs
-    axs[1].plot(range(1, epoch + 2), epoch_cers, label="CER", color="purple")
-    axs[1].set_title('CER vs Epochs')
-    axs[1].set_xlabel('Epoch')
-    axs[1].set_ylabel('CER')
-    axs[1].grid(True)
+    # 仅绘制 CER vs Epochs
+    ax.plot(range(1, epoch + 2), epoch_cers, label="CER", color="purple")
+    ax.set_title('CER vs Epochs')
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('CER')
+    ax.grid(True)
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
     if not os.path.exists("plots"):
         os.makedirs("plots")
     
-    plt.savefig(f'plots/metrics_epoch_{epoch+1}.png')
+    plt.savefig(f'plots/cer_epoch_{epoch+1}.png')
     plt.close(fig)
-
-# 假设 decoder.cer 返回字符错误数的实现示例：
-# 请根据实际情况修改您的 GreedyDecoder
-#class GreedyDecoder:
-#    def __init__(self, labels):
-#        self.labels = labels
-#        self.blank = labels.index('_')
-#
-#    def cer(self, hypothesis, reference):
-#        hyp = list(hypothesis)
-#        ref = list(reference)
-#        d = np.zeros((len(ref)+1, len(hyp)+1), dtype=np.int32)
-#
-#        for i in range(len(ref)+1):
-#            for j in range(len(hyp)+1):
-#                if i == 0:
-#                    d[i][j] = j
-#                elif j == 0:
-#                    d[i][j] = i
-#                elif ref[i-1] == hyp[j-1]:
-#                    d[i][j] = d[i-1][j-1]
-#                else:
-#                    substitution = d[i-1][j-1] + 1
-#                    insertion = d[i][j-1] + 1
-#                    deletion = d[i-1][j] + 1
-#                    d[i][j] = min(substitution, insertion, deletion)
-#
-#        error_count = d[len(ref)][len(hyp)]
-#        return error_count
-#
-#    def decode(self, probs, lengths):
-#        # 根据您的实现来返回解码结果
-#        pass
-#
-#    def convert_to_strings(self, labels_batch):
-#        # 根据您的实现将数字标签转为字符串
-#        pass
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
