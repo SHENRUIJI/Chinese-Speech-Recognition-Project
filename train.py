@@ -33,7 +33,7 @@ def validate_index_file(index_path):
 
 def train(
     model,
-    epochs=2,
+    epochs=50,
     batch_size=128,
     train_index_path=TRAIN_PATH,
     dev_index_path=DEV_PATH,
