@@ -33,6 +33,7 @@ gunicorn==20.0.4
 #### 2.1. `train.py`: 
 #### 2.2. `data.py`: 
 #### 2.3. `feature.py`: 
+#### 2.3. `decoder.py`: 
 
 ### 3. Папка
 #### 3.1. Папка `processed`:В этой папке хранятся файлы после предобработки, включая:train.index,dev.index,labels.gz.
