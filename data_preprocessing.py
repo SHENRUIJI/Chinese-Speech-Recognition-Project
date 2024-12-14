@@ -5,15 +5,14 @@ import logging
 import joblib
 from collections import ChainMap
 
-# 配置日志记录
+# Настройка логирования / 配置日志记录
 logging.basicConfig(filename='data_preprocessing.log', level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-# 获取当前工作目录
+# Определение путей к директориям / 定义路径
 current_dir = os.getcwd()
 
-# 定义路径
-base_dir = current_dir  # 使用当前目录作为基础目录
+base_dir = current_dir 
 train_path_dir = os.path.join(base_dir, 'data', 'train')
 dev_path_dir = os.path.join(base_dir, 'data', 'dev')
 
@@ -21,6 +20,7 @@ logging.info(f"Base directory: {base_dir}")
 logging.info(f"Train path directory: {train_path_dir}")
 logging.info(f"Dev path directory: {dev_path_dir}")
 
+# Получение путей к файлам для тренировочного и валидационного наборов данных / 获取训练集和开发集的文件路径
 def get_files_paths(rootdir):
     files_paths = []
     for root, dirs, files in tqdm(os.walk(rootdir), desc=f"Searching in {rootdir}"):
@@ -37,7 +37,6 @@ def get_files_paths(rootdir):
                     logging.warning(f"TRN file not found for WAV file: {wav_file}")  # 添加警告信息
     return files_paths
 
-# 获取训练集和开发集的文件路径
 train_files_paths = get_files_paths(train_path_dir)
 dev_files_paths = get_files_paths(dev_path_dir)
 
@@ -48,7 +47,7 @@ if not train_files_paths or not dev_files_paths:
     logging.error("No matching pairs found. Please check your data directory and file naming conventions.")
     exit(1)
 
-# 读取transcript文件内容并创建字典
+# Чтение содержимого файла транскрипта и создание словаря / 读取transcript文件内容并创建字典
 def read_trn(file_path):
     with open(file_path, encoding='utf-8') as f:
         lines = f.readlines()
@@ -59,7 +58,7 @@ def read_trn(file_path):
             return natural_text, pinyin_with_tones, phonemes
     return None, None, None
 
-# 创建训练集和开发集的索引文件
+# Создание индексных файлов для тренировочного и валидационного наборов данных / 创建训练集和开发集的索引文件
 train_index = []
 for wav_file, trn_file in tqdm(train_files_paths, desc="Processing train files"):
     natural_text, pinyin_with_tones, phonemes = read_trn(trn_file)
@@ -72,21 +71,21 @@ for wav_file, trn_file in tqdm(dev_files_paths, desc="Processing dev files"):
     if natural_text:
         dev_index.append((wav_file, natural_text, pinyin_with_tones, phonemes))
 
-# 提取所有唯一字符
+# Извлечение всех уникальных символов из текстов / 提取所有唯一字符
 all_texts = [item[1] for item in train_index + dev_index]
 all_characters = set(''.join(all_texts))
 
-# 将空格和下划线添加到字符集中
+# Добавление пробела и подчеркивания в множество символов / 将空格和下划线添加到字符集中
 all_characters = ['_'] + sorted(list(all_characters)) + [' ']
 
-# 保存 labels.gz 文件
+# Сохранение файла меток labels.gz / 保存 labels.gz 文件
 output_dir = os.path.join(base_dir, 'processed/')
 os.makedirs(output_dir, exist_ok=True)
 labels_path = os.path.join(output_dir, 'labels.gz')
 joblib.dump(all_characters, labels_path)
 logging.info(f"Labels file saved to: {labels_path}")
 
-# 创建索引文件
+# Создание индексных файлов / 创建索引文件
 pd.DataFrame(train_index, columns=['file', 'natural_text', 'pinyin_with_tones', 'phonemes']).to_csv(
     os.path.join(output_dir, 'train.index'), index=False, header=True)
 pd.DataFrame(dev_index, columns=['file', 'natural_text', 'pinyin_with_tones', 'phonemes']).to_csv(
