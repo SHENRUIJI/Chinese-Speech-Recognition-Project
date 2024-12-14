@@ -3,6 +3,7 @@ import joblib
 from feature import *
 import os
 
+# Помощная функция для проверки содержимого индексного файла
 # 验证索引文件内容的辅助函数
 def validate_index_file(index_path):
     with open(index_path) as f:
@@ -26,6 +27,7 @@ def validate_index_file(index_path):
 
 class MASRDataset(Dataset):
     def __init__(self, index_path, labels_path):
+        # Вызов функции проверки
         # 调用验证函数
         validate_index_file(index_path)
 
@@ -33,6 +35,7 @@ class MASRDataset(Dataset):
             idx = f.readlines()
         idx = [x.strip().split(",", 1) for x in idx]
 
+        # Проверка и очистка путей, чтение содержимого .trn файлов как текста транскрипции
         # 验证并清理路径，同时读取 .trn 文件的内容作为转录文本
         self.idx = []
         for i, (wav, _) in enumerate(idx):
@@ -53,7 +56,8 @@ class MASRDataset(Dataset):
 
     def __getitem__(self, index):
         wav, transcript = self.idx[index]
-        print(f"Attempting to load audio file: {wav}")  # 调试输出
+        print(f"Attempting to load audio file: {wav}")  # Отладочный вывод
+                                                         # 调试输出
         try:
             wav_data = load_audio(wav)
         except Exception as e:
@@ -73,6 +77,7 @@ def _collate_fn(batch):
     def func(p):
         return p[0].size(1)
 
+    # Сортировка батча по длине последовательности в порядке убывания
     batch = sorted(batch, key=lambda sample: sample[0].size(1), reverse=True)
     longest_sample = max(batch, key=func)[0]
     freq_size = longest_sample.size(0)
@@ -98,4 +103,5 @@ def _collate_fn(batch):
 class MASRDataLoader(DataLoader):
     def __init__(self, *args, **kwargs):
         super(MASRDataLoader, self).__init__(*args, **kwargs)
+        # Установка пользовательской функции объединения для DataLoader
         self.collate_fn = _collate_fn
