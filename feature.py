@@ -1,4 +1,3 @@
-__mtime__= '20210318'
 import librosa
 import numpy as np
 import torch
