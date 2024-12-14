@@ -1,5 +1,5 @@
 # Chinese-Speech-Recognition-Project
-## Модельное обучение ( Шэнь Жуйцзи)
+## Модельное обучение 50 epochs ( Шэнь Жуйцзи)
 ### `requirements.txt`: 
 
 ```text
