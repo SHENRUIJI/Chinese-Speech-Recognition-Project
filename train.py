@@ -10,6 +10,7 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 
+# Помощная функция для проверки содержимого индексного файла
 # 验证索引文件内容的辅助函数
 def validate_index_file(index_path):
     with open(index_path) as f:
@@ -43,6 +44,7 @@ def train(
     max_grad_norm=0.2,
     weight_decay=0,
 ):
+    # Проверка содержимого индексных файлов
     # 验证索引文件内容
     validate_index_file(train_index_path)
     validate_index_file(dev_index_path)
@@ -66,13 +68,15 @@ def train(
         nesterov=True,
         weight_decay=weight_decay,
     )
-    ctcloss = torch.nn.CTCLoss(reduction='mean')  # 使用内置CTCLoss
+    ctcloss = torch.nn.CTCLoss(reduction='mean')  # Использование встроенного CTCLoss
+                                                  # 使用内置CTCLoss
     
     lr_sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.985)
 
     best_cer = float('inf')
     best_model_path = "pretrained/best_model.pth"
     
+    # Инициализация списков для записи статистики
     # 初始化记录列表
     epoch_losses = []
     epoch_cers = []
@@ -131,6 +135,7 @@ def train(
                 os.makedirs("pretrained")
             torch.save(model.state_dict(), f"pretrained/model_{epoch}.pth")
 
+        # Вызов измененной функции plot_metrics для отображения только кривой CER
         # 调用修改后的plot_metrics函数，仅绘制CER曲线
         plot_metrics(epoch, epoch_losses, learning_rates, epoch_cers)
 
@@ -160,7 +165,8 @@ def eval(model, dataloader):
                 total_ref_chars += len(ref)
     
     cer = total_errors / total_ref_chars if total_ref_chars > 0 else 0
-    cer = cer / 13.0  # 缩放CER
+    cer = cer / 13.0  # Масштабирование CER
+                     # 缩放CER
     return cer
 
 def compute_grad_norm(model):
@@ -187,11 +193,13 @@ def get_additional_stats(model):
     }
     return stats
 
+# Измененная функция построения графиков: отображение только кривой CER
 # 修改后的绘图函数：只绘制CER曲线
 def plot_metrics(epoch, epoch_losses, learning_rates, epoch_cers):
     fig, ax = plt.subplots(figsize=(6, 5))
     fig.suptitle(f'Training Metrics up to Epoch {epoch+1}', fontsize=16)
 
+    # Отображение только CER vs Epochs
     # 仅绘制 CER vs Epochs
     ax.plot(range(1, epoch + 2), epoch_cers, label="CER", color="purple")
     ax.set_title('CER vs Epochs')
