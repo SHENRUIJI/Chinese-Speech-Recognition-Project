@@ -1,21 +1,21 @@
-// 兼容性处理
+// Compatibility Processing
 window.URL = window.URL || window.webkitURL;
 
-// 创建录音机类
+// Creating the Recorder class
 var HZRecorder = function (stream, config) {
     config = config || {};
     config.sampleBits = config.sampleBits || 16;      // 采样数位：8, 16
     config.sampleRate = config.sampleRate || 16000;   // 采样率：16000
 
-    // 创建音频环境对象
+    // Creating Audio Environment Objects
     var audioContext = window.AudioContext || window.webkitAudioContext;
     var context = new audioContext();
     var audioInput = context.createMediaStreamSource(stream);
 
-    // 创建音频处理节点
-    var recorder = context.createScriptProcessor(4096, 1, 1); // 单声道
+    // Create Audio Processing Node
+    var recorder = context.createScriptProcessor(4096, 1, 1); // mono
 
-    // 音频数据管理
+    // Audio Data Management
     var audioData = {
         size: 0,
         buffer: [],
@@ -94,12 +94,12 @@ var HZRecorder = function (stream, config) {
     this.start = function () {
         audioInput.connect(recorder);
         recorder.connect(context.destination);
-        console.log("录音已开始");
+        console.log("Recording has begun.");
     };
 
     this.stop = function () {
         recorder.disconnect();
-        console.log("录音已停止");
+        console.log("The recording has stopped.");
     };
 
     this.getBlob = function () {
@@ -110,20 +110,20 @@ var HZRecorder = function (stream, config) {
     this.play = function (audio) {
         const blob = this.getBlob();
         if (!blob) {
-            console.error("音频数据为空，无法播放");
+            console.error("Audio data is empty and cannot be played");
             return;
         }
         const audioURL = window.URL.createObjectURL(blob);
         audio.src = audioURL;
         audio.load();
-        audio.play().catch(error => console.error("播放录音失败: ", error));
-        console.log("正在播放录音");
+        audio.play().catch(error => console.error("Playback of recording failed:", error));
+        console.log("Recording in progress");
     };
 
     this.upload = function (url, callback) {
         const blob = this.getBlob();
         if (!blob) {
-            console.error("音频数据为空，无法上传");
+            console.error("Audio data is empty and cannot be uploaded");
             return;
         }
         var fd = new FormData();
@@ -151,7 +151,7 @@ var HZRecorder = function (stream, config) {
         }
 
         xhr.send(fd);
-        console.log("录音数据已上传");
+        console.log("Recording data uploaded");
     };
 
     recorder.onaudioprocess = function (e) {
@@ -163,7 +163,7 @@ HZRecorder.canRecording = !!navigator.mediaDevices.getUserMedia;
 
 HZRecorder.get = function (callback, config) {
     if (!HZRecorder.canRecording) {
-        alert('当前浏览器不支持录音功能！');
+        alert('The recording function is not supported by the current browser!');
         return;
     }
 
@@ -171,7 +171,7 @@ HZRecorder.get = function (callback, config) {
         const rec = new HZRecorder(stream, config);
         callback(rec);
     }).catch(function (error) {
-        console.error('无法获取麦克风权限:', error);
-        alert('无法获取麦克风权限，请检查浏览器设置！');
+        console.error('Unable to get microphone privileges.', error);
+        alert('Unable to get microphone privileges, please check your browser settings!');
     });
 };

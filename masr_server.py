@@ -9,7 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import beamdecode
 
 app = Flask(__name__, template_folder="templates", static_folder="static", static_url_path="/static")
-CORS(app, resources=r'/*', supports_credentials=True)  # 支持跨域访问
+CORS(app, resources=r'/*', supports_credentials=True)  # Support for cross-domain access
 
 
 @app.route("/masr/recognize", methods=["POST"])
@@ -34,8 +34,3 @@ if __name__ == '__main__':
     app.config['JSON_AS_ASCII'] = False
     app.wsgi_app = ProxyFix(app.wsgi_app)
     app.run()
-
-'''
-#启动服务命令（用docker跑）
-docker run -d -p 5005:5005 -v $PWD/masr_bz:/workspace/masr_bz  -w /workspace/masr_bz binzhouchn/masr:1.6.0-cuda10.1-cudnn7 gunicorn -b :5005 masr_server:app
-'''
