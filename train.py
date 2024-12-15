@@ -193,14 +193,11 @@ def get_additional_stats(model):
     }
     return stats
 
-# Измененная функция построения графиков: отображение только кривой CER
-# 修改后的绘图函数：只绘制CER曲线
+# отображение кривой CER
+# 绘制CER曲线
 def plot_metrics(epoch, epoch_losses, learning_rates, epoch_cers):
     fig, ax = plt.subplots(figsize=(6, 5))
     fig.suptitle(f'Training Metrics up to Epoch {epoch+1}', fontsize=16)
-
-    # Отображение только CER vs Epochs
-    # 仅绘制 CER vs Epochs
     ax.plot(range(1, epoch + 2), epoch_cers, label="CER", color="purple")
     ax.set_title('CER vs Epochs')
     ax.set_xlabel('Epoch')
