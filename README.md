@@ -57,7 +57,7 @@ apt-get install libsndfile1
 
 起flask服务进行预测
 ```shell
-sudo docker run -d -p 5005:5005 -v $PWD/masr:/workspace/masr  -w /workspace/masr binzhouchn/masr:1.6.0-cuda10.1-cudnn7 gunicorn -b :5005 masr_server:app
+python masr_server.python
 ```
 网页界面显示<br>
 <img src="images/index.jpg" width="460">
