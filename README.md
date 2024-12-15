@@ -1,4 +1,9 @@
 # Chinese-Speech-Recognition-Project
+## The team members are ：
+- `YANG TIANYU`
+- `FU ZUHE`
+- `HU YUHANG`
+- `SHEN RUIJI`
 ### `requirements.txt`: 
 ```text
 torch==1.6.0
