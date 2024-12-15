@@ -1,5 +1,5 @@
 # Chinese-Speech-Recognition-Project
-## The team members are ：
+## Наши члены команды: 
 - `Ян Тяньюй`
 - `Фу Цзухэ`
 - `Ху Юйхан`：отвечает за предобработку данных.
