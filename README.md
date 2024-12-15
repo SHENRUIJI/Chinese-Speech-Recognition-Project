@@ -1,7 +1,7 @@
 # Chinese-Speech-Recognition-Project
 ## The team members are ：
-- `YANG TIANYU`
-- `FU ZUHE`
+- `Ян Тяньюй`
+- `Фу Цзухэ`
 - `Ху Юйхан`：отвечает за предобработку данных.
 - `Шэнь Жуйцзи`：отвечает за обучение модели.
 ### `requirements.txt`: 
