@@ -18,7 +18,6 @@
 torch==1.6.0
 Levenshtein==0.12.0
 librosa==0.8.0
-warpctc_pytorch==0.2.1
 tensorboardX==2.1
 ctcdecode==1.0.2
 pycorrector==0.3.0 #Chinese Text Error Corrector
