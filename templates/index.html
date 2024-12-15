@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语音识别</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="/static/record.js"></script>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="text-center">语音识别</h3>
+
+        <!-- 表单上传文件 -->
+        <form id="uploadForm" enctype="multipart/form-data" class="mb-4">
+            <label class="form-label">选择语音文件：</label>
+            <input type="file" required accept="audio/*" name="audio" id="audioInput" class="form-control">
+            <button type="submit" class="btn btn-primary mt-3 w-100">上传</button>
+        </form>
+
+        <h5 class="mt-4">录音操作：</h5>
+        <div class="d-flex justify-content-between">
+            <button onclick="startRecording()" class="btn btn-outline-success">
+                <i class="bi bi-mic"></i> 开始录音
+            </button>
+            <button onclick="stopRecording()" class="btn btn-outline-danger">
+                <i class="bi bi-stop-circle"></i> 停止录音
+            </button>
+            <button onclick="playRecording()" class="btn btn-outline-warning">
+                <i class="bi bi-play-circle"></i> 播放录音
+            </button>
+            <button onclick="uploadAudio()" class="btn btn-outline-primary">
+                <i class="bi bi-upload"></i> 提交录音
+            </button>
+        </div>
+
+        <!-- 播放音频 -->
+        <audio id="audio-player" controls class="mt-3"></audio>
+
+        <!-- 显示录音状态 -->
+        <div id="record-status" class="text-danger mt-3"></div>
+
+        <!-- 显示识别结果 -->
+        <div id="result" class="alert alert-info mt-3" style="display: none;"></div>
+    </div>
+</div>
+
+<script>
+    var recorder;
+
+    // 开始录音
+    function startRecording() {
+        HZRecorder.get(function (rec) {
+            recorder = rec;
+            recorder.start();
+            document.getElementById('record-status').innerText = "正在录音...";
+        });
+    }
+
+    // 停止录音
+    function stopRecording() {
+        recorder.stop();
+        document.getElementById('record-status').innerText = "录音已停止";
+    }
+
+    // 播放录音
+    function playRecording() {
+        var audio = document.getElementById("audio-player");
+        recorder.play(audio);
+    }
+
+    // 提交录音数据
+    function uploadAudio() {
+        console.log("准备上传录音...");
+        recorder.upload("/masr/recognize", function (state, xhr) {
+            switch (state) {
+                case 'uploading':
+                    console.log("录音上传中...");
+                    break;
+                case 'ok':
+                    try {
+                        if (!xhr.responseText) {
+                            throw new Error("后端响应为空！");
+                        }
+                        console.log("后端返回数据: ", xhr.responseText);
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.code === 200) {
+                            const recognizeText = response["recognize text"];
+                            console.log("识别结果: ", recognizeText);
+                            const resultDiv = document.getElementById('result');
+                            resultDiv.innerText = "识别结果: " + recognizeText;
+                            resultDiv.style.display = "block";
+                        } else {
+                            alert("识别失败：" + response.message);
+                        }
+                    } catch (error) {
+                        console.error("解析后端响应失败: ", error);
+                        alert("识别失败，请检查后端返回内容！");
+                    }
+                    break;
+                case 'error':
+                    alert("录音上传失败！");
+                    break;
+                case 'cancel':
+                    alert("录音上传被取消！");
+                    break;
+            }
+        });
+    }
+
+    // 拦截表单提交，上传音频文件
+    document.getElementById("uploadForm").addEventListener("submit", function (e) {
+        e.preventDefault(); // 阻止默认表单提交行为
+
+        const fileInput = document.getElementById("audioInput");
+        if (!fileInput.files[0]) {
+            alert("请选择语音文件！");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("audio", fileInput.files[0]);
+
+        fetch("/masr/recognize", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("服务器响应失败！");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.code === 200) {
+                const resultDiv = document.getElementById("result");
+                resultDiv.innerText = "识别结果: " + data["recognize text"];
+                resultDiv.style.display = "block";
+            } else {
+                alert("识别失败：" + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("上传失败：", error);
+            alert("上传失败，请检查网络！");
+        });
+    });
+</script>
+</body>
+</html>

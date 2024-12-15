@@ -1,0 +1,8 @@
+ctcdecode/*
+
+pretrained/*.pth
+
+save_audio/*
+!save_audio/.gitkeep
+
+lm/*.klm
