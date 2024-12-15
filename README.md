@@ -13,7 +13,7 @@
 
 На приведенной выше диаграмме показано изменение CER (Character Error Rate) на валидационном наборе данных по мере прохождения эпох обучения.
 
-## `requirements.txt`: 
+### `requirements.txt`: 
 ```text
 torch==1.6.0
 Levenshtein==0.12.0
