@@ -45,3 +45,15 @@ python masr_server.python
 ```
 网页界面显示 Отображение веб-интерфейса<br>
 <img src="images/index.png" width="460">
+
+## 构建Docker镜像 Создание образа Docker
+
+```shell
+docker build -t chinese-speech-recognition-server .
+```
+
+## 运行Docker容器 Запуск контейнера Docker
+
+```shell
+docker run -d -p 5000:5000 chinese-speech-recognition-server
+```
